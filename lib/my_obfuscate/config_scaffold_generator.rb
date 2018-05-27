@@ -2,6 +2,8 @@ class MyObfuscate
   module ConfigScaffoldGenerator
 
     def generate_config(obfuscator, config, input_io, output_io)
+      output_io.puts config_header_open
+
       input_io.each do |line|
         if obfuscator.database_type == :postgres
           table_data = parse_copy_statement(line)
@@ -20,17 +22,13 @@ class MyObfuscate
         missing_columns = obfuscator.missing_column_list(table_name, columns)
         extra_columns = obfuscator.extra_column_list(table_name, columns)
 
-        if missing_columns.count == 0 && extra_columns.count == 0
-          # all columns are accounted for
-          output_io.puts "\n# All columns in the config for #{table_name.upcase} are present and accounted for."
-        else
-          # there are columns missing (or perhaps the whole table is missing); show a scaffold
-          emit_scaffold(table_name, table_config, extra_columns, missing_columns, output_io)
-        end
+        emit_scaffold(table_name, table_config, extra_columns, missing_columns, output_io)
 
         # Now that this table_name has been processed, remember it so we don't scaffold it again
         obfuscator.scaffolded_tables[table_name] = 1
       end
+
+      output_io.puts config_header_close
     end
 
     def config_table_open(table_name)
@@ -41,8 +39,15 @@ class MyObfuscate
       "  },"
     end
 
-    def emit_scaffold(table_name, existing_config, extra_columns, columns_to_scaffold, output_io)
+    def config_header_open
+      "CONFIG = {"
+    end
 
+    def config_header_close
+      "\n}"
+    end
+
+    def emit_scaffold(table_name, existing_config, extra_columns, columns_to_scaffold, output_io)
       # header block: contains table name and any existing config
       if existing_config
         output_io.puts config_table_open(table_name)
