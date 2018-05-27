@@ -34,7 +34,7 @@ class MyObfuscate
     end
 
     def config_table_open(table_name)
-      "\n  :#{table_name} => {"
+      "\n  :'#{table_name}' => {"
     end
 
     def config_table_close(table_name)
