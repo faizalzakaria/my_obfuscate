@@ -1,7 +1,7 @@
 class MyObfuscate
   class ConfigApplicator
 
-    def self.apply_table_config(row, table_config, columns)
+    def self.apply_table_config(row, table_config, columns, custom_types)
       return row unless table_config.is_a?(Hash)
       row_hash = row_as_hash(row, columns)
 
@@ -80,6 +80,17 @@ class MyObfuscate
             nil
           when :keep
             row[index]
+          when :custom
+            type_name = definition[:name]
+            code      = custom_types[type_name]
+
+            if code && code.is_a?(Proc)
+              code.call(row_hash)
+            elsif code
+              $stderr.puts "Only Proc code is supported"
+            else
+              $stderr.puts "Unknown custom type #{type_name}, have you register this type?"
+            end
           else
             $stderr.puts "Keeping a column value by providing an unknown type (#{definition[:type]}) is deprecated.  Use :keep instead."
             row[index]

@@ -7,6 +7,7 @@ require 'walker_method'
 # column names in the insert statements.
 class MyObfuscate
   attr_accessor :config, :globally_kept_columns, :fail_on_unspecified_columns, :database_type, :scaffolded_tables
+  attr_reader :custom_types
 
   NUMBER_CHARS = "1234567890"
   USERNAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_" + NUMBER_CHARS
@@ -15,8 +16,9 @@ class MyObfuscate
   # Make a new MyObfuscate object.  Pass in a configuration structure to define how the obfuscation should be
   # performed.  See the README.rdoc file for more information.
   def initialize(configuration = {})
-    @config = configuration
+    @config            = configuration
     @scaffolded_tables = {}
+    @custom_types      = {}
   end
 
   def fail_on_unspecified_columns?
@@ -35,6 +37,11 @@ class MyObfuscate
     end
 
     @database_helper
+  end
+
+  # Register new type other than the standard
+  def register_custom_type(name, code)
+    @custom_types[name] = code
   end
 
   # Read an input stream and dump out an obfuscated output stream.  These streams could be StringIO objects, Files,
@@ -100,7 +107,7 @@ class MyObfuscate
       check_for_table_columns_not_in_definition(table_name, columns) if fail_on_unspecified_columns?
       # Note: Remember to SQL escape strings in what you pass back.
       reassembling_each_insert(line, table_name, columns, ignore) do |row|
-        ConfigApplicator.apply_table_config(row, table_config, columns)
+        ConfigApplicator.apply_table_config(row, table_config, columns, custom_types)
       end
     end
   end
