@@ -85,7 +85,7 @@ class MyObfuscate
             code      = custom_types[type_name]
 
             if code && code.is_a?(Proc)
-              code.call(row_hash)
+              code.call(row_hash, column)
             elsif code
               $stderr.puts "Only Proc code is supported"
             else
