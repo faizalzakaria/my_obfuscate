@@ -18,7 +18,10 @@ class MyObfuscate
 
         columns = table_data[:column_names]
         table_config = config[table_name]
-        next if table_config == :truncate || table_config == :keep
+        if table_config == :truncate || table_config == :keep
+          output_io.puts config_table_skip(table_name, table_config)
+          next
+        end
 
         missing_columns = obfuscator.missing_column_list(table_name, columns)
         extra_columns = obfuscator.extra_column_list(table_name, columns)
@@ -30,6 +33,10 @@ class MyObfuscate
       end
 
       output_io.puts config_header_close
+    end
+
+    def config_table_skip(table_name, table_config)
+      "\n  :'#{table_name}' => :#{table_config},"
     end
 
     def config_table_open(table_name)

@@ -16,7 +16,6 @@ class MyObfuscate
           next if unless_check.call(row_hash)
         end
 
-
         if definition.has_key?(:if)
           if_check = make_conditional_method(definition[:if], index, row)
 
